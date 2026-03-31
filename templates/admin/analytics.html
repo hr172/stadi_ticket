@@ -1,0 +1,133 @@
+{% extends "partials/base.html" %}
+{% block title %}Analytics — Stadi Soka Admin{% endblock %}
+{% block content %}
+
+<h4 class="fw-bold mb-4"><i class="bi bi-graph-up text-warning"></i> Platform Analytics</h4>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-3">
+        <div class="fs-3 fw-bold text-success">KES {{ "{:,}".format(total_revenue) }}</div>
+        <div class="small text-muted">Total Revenue (7d)</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-3">
+        <div class="fs-3 fw-bold text-primary">{{ tickets_sold }}</div>
+        <div class="small text-muted">Active Tickets</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-3">
+        <div class="fs-3 fw-bold text-warning">{{ buyback_rate }}%</div>
+        <div class="small text-muted">Buyback Rate</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-3">
+        <div class="fs-3 fw-bold text-info">{{ (total_revenue * 0.1) | int }}</div>
+        <div class="small text-muted">Est. Penalty Revenue</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-8">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Revenue — Last 7 Days (KES)</h6>
+        <canvas id="revenueChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Sales by Category</h6>
+        <canvas id="categoryChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h6 class="fw-bold mb-3">Buyback Activity — Last 7 Days</h6>
+    <canvas id="buybackChart" height="100"></canvas>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const revenueLabels = {{ revenue_labels | tojson }};
+const revenueData   = {{ revenue_data | tojson }};
+const categoryLabels = {{ category_labels | tojson }};
+const categoryData   = {{ category_data | tojson }};
+const buybackLabels  = {{ buyback_labels | tojson }};
+const buybackReturns = {{ buyback_returns | tojson }};
+const buybackResold  = {{ buyback_resold | tojson }};
+
+new Chart(document.getElementById('revenueChart'), {
+  type: 'bar',
+  data: {
+    labels: revenueLabels,
+    datasets: [{
+      label: 'Revenue (KES)',
+      data: revenueData,
+      backgroundColor: 'rgba(26,86,219,0.7)',
+      borderRadius: 6
+    }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+new Chart(document.getElementById('categoryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: categoryLabels,
+    datasets: [{
+      data: categoryData,
+      backgroundColor: ['#1a56db', '#f59e0b', '#10b981']
+    }]
+  },
+  options: { plugins: { legend: { position: 'bottom' } }, cutout: '60%' }
+});
+
+new Chart(document.getElementById('buybackChart'), {
+  type: 'line',
+  data: {
+    labels: buybackLabels,
+    datasets: [
+      {
+        label: 'Returns',
+        data: buybackReturns,
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239,68,68,0.1)',
+        tension: 0.3,
+        fill: true
+      },
+      {
+        label: 'Resold',
+        data: buybackResold,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.1)',
+        tension: 0.3,
+        fill: true
+      }
+    ]
+  },
+  options: { scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

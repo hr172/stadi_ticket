@@ -1,0 +1,74 @@
+{% extends "partials/base.html" %}
+{% block title %}Dashboard — Stadi Soka{% endblock %}
+{% block content %}
+
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
+    <div class="wallet-balance d-flex justify-content-between align-items-center">
+      <div>
+        <div class="small opacity-75">Wallet Balance</div>
+        <div class="fs-3 fw-bold">KES {{ wallet_balance }}</div>
+      </div>
+      <div>
+        <a href="{{ url_for('wallet_page') }}" class="btn btn-light btn-sm">Top Up</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-8">
+    <div class="card h-100">
+      <div class="card-body py-3">
+        <h6 class="mb-2 text-muted">Quick Links</h6>
+        <a href="{{ url_for('my_tickets') }}" class="btn btn-outline-primary btn-sm me-2">
+          <i class="bi bi-ticket-perforated"></i> My Tickets
+        </a>
+        <a href="{{ url_for('wallet_page') }}" class="btn btn-outline-success btn-sm me-2">
+          <i class="bi bi-wallet2"></i> Wallet
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h4 class="fw-bold mb-3"><i class="bi bi-calendar-event text-primary"></i> Upcoming Matches</h4>
+
+{% if matches %}
+  <div class="row g-3">
+    {% for match in matches %}
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-secondary">{{ match.competition }}</span>
+              <small class="text-muted">{{ match.kickoff.strftime('%d %b %Y, %H:%M') }}</small>
+            </div>
+            <h5 class="card-title fw-bold mb-1">{{ match.home_team }}</h5>
+            <div class="text-muted small mb-2">vs</div>
+            <h5 class="card-title fw-bold mb-3">{{ match.away_team }}</h5>
+            <div class="small text-muted mb-3">
+              <i class="bi bi-geo-alt"></i> {{ match.venue }}
+            </div>
+
+            {% for config in match.seat_configs %}
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">{{ config.seating_category }}</span>
+                <span class="fw-bold">KES {{ config.price_kes }}</span>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="{{ url_for('match_detail', match_id=match.id) }}" class="btn btn-primary w-100">
+              <i class="bi bi-ticket-perforated"></i> Buy Tickets
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-calendar-x display-4 d-block mb-3"></i>
+    <p>No upcoming matches scheduled. Check back soon.</p>
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "partials/base.html" %}
+{% block title %}Wallet — Stadi Soka{% endblock %}
+{% block content %}
+
+<h4 class="fw-bold mb-4"><i class="bi bi-wallet2 text-success"></i> My Wallet</h4>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="wallet-balance text-center py-4">
+      <div class="small opacity-75 mb-1">Available Balance</div>
+      <div class="display-5 fw-bold">KES {{ balance }}</div>
+      <div class="small opacity-75 mt-1">No fee to spend. 2% fee on withdrawal.</div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle text-success"></i> Top Up via M-Pesa</h6>
+        <form method="POST" action="{{ url_for('topup_wallet') }}">
+          <div class="mb-3">
+            <label class="form-label small">Amount (KES)</label>
+            <input type="number" name="amount" class="form-control" min="10" step="10" placeholder="e.g. 500" required/>
+            <div class="form-text">STK Push sent to {{ current_user.phone }}</div>
+          </div>
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-phone"></i> Send STK Push
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="bi bi-arrow-up-circle text-primary"></i> Withdraw to M-Pesa</h6>
+        <form method="POST" action="{{ url_for('withdraw_wallet') }}">
+          <div class="mb-3">
+            <label class="form-label small">Amount to withdraw (KES)</label>
+            <input type="number" name="amount" class="form-control" min="10" max="{{ balance }}" step="10" placeholder="e.g. 200" required/>
+            <div class="form-text">2% platform fee deducted from withdrawal.</div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100" {% if balance < 10 %}disabled{% endif %}>
+            <i class="bi bi-send"></i> Withdraw
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h5 class="fw-bold mb-3">Recent Transactions</h5>
+{% if transactions %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Type</th>
+          <th class="text-end">Amount (KES)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+          <tr>
+            <td class="small text-muted">{{ tx.created_at.strftime('%d %b %Y %H:%M') }}</td>
+            <td class="small">{{ tx.description or '—' }}</td>
+            <td>
+              {% if tx.transaction_type == 'credit' %}
+                <span class="badge bg-success">Credit</span>
+              {% elif tx.transaction_type == 'debit' %}
+                <span class="badge bg-danger">Debit</span>
+              {% elif tx.transaction_type == 'pending' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ tx.transaction_type }}</span>
+              {% endif %}
+            </td>
+            <td class="text-end fw-bold {% if tx.transaction_type == 'credit' %}text-success{% elif tx.transaction_type == 'debit' %}text-danger{% endif %}">
+              {{ '+' if tx.transaction_type == 'credit' else '-' if tx.transaction_type == 'debit' else '' }}{{ tx.amount_kes }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="text-muted">No transactions yet.</p>
+{% endif %}
+
+{% endblock %}

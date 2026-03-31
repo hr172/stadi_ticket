@@ -1,0 +1,29 @@
+{% extends "partials/base.html" %}
+{% block title %}Select Category{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4">
+  {% if ticket_type == 'group' %}Group Bundle — {% endif %}Select Seat Category
+</h4>
+{% if group_size %}<div class="alert alert-info"><i class="bi bi-people"></i> {{ group_size }}-seat bundle selected</div>{% endif %}
+<div class="row g-3">
+  {% for config in categories %}
+    <div class="col-md-4">
+      <form method="POST">
+        <button type="submit" name="category" value="{{ config.seating_category }}"
+                class="card w-100 text-start border-0 shadow-sm p-0 btn btn-outline-light">
+          <div class="card-body text-center p-4">
+            <h5 class="fw-bold">{{ config.seating_category }}</h5>
+            <div class="display-6 fw-bold text-primary">KES {{ config.price_kes }}</div>
+            {% if ticket_type == 'group' and group_size %}
+              {% set discount = 0.10 if group_size == 3 else 0.14 %}
+              {% set bundle_price = (config.price_kes * (1 - discount)) | int * group_size %}
+              <div class="small text-success mt-1">Bundle: KES {{ bundle_price }} ({{ (discount*100)|int }}% off)</div>
+            {% endif %}
+            <div class="small text-muted mt-2">{{ config.capacity }} seats available</div>
+          </div>
+        </button>
+      </form>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

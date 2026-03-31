@@ -1,0 +1,89 @@
+{% extends "partials/base.html" %}
+{% block title %}{{ match.home_team }} vs {{ match.away_team }} — Stadi Soka{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Home</a></li>
+    <li class="breadcrumb-item active">{{ match.home_team }} vs {{ match.away_team }}</li>
+  </ol>
+</nav>
+
+<div class="card shadow mb-4">
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h3 class="fw-bold mb-1">{{ match.home_team }} <span class="text-muted">vs</span> {{ match.away_team }}</h3>
+        <div class="text-muted mb-2">
+          <i class="bi bi-calendar3"></i> {{ match.kickoff.strftime('%A, %d %B %Y at %H:%M') }} &nbsp;
+          <i class="bi bi-geo-alt ms-2"></i> {{ match.venue }} &nbsp;
+          <span class="badge bg-secondary ms-2">{{ match.competition }}</span>
+        </div>
+        <div class="progress mb-1" style="height:8px;">
+          <div class="progress-bar bg-danger" style="width:{{ match.sell_through_pct }}%"></div>
+        </div>
+        <div class="small text-muted">{{ match.sell_through_pct }}% sold — {{ match.sold_count }} / {{ match.total_capacity }} seats</div>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        {% if match.buyback_available %}
+          <span class="badge bg-success fs-6"><i class="bi bi-arrow-repeat"></i> Buyback Active</span>
+        {% else %}
+          <span class="badge bg-secondary fs-6">Buyback available at 80% sold</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<h5 class="fw-bold mb-3">Choose Ticket Type</h5>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card h-100 border-primary">
+      <div class="card-body text-center p-4">
+        <div class="display-4 mb-3">🎫</div>
+        <h5 class="fw-bold">Single Ticket</h5>
+        <p class="text-muted small">One seat for you. Buyback at 90% if you can't make it.</p>
+        <form method="POST" action="{{ url_for('select_purchase_type', match_id=match.id) }}">
+          <input type="hidden" name="ticket_type" value="single"/>
+          <button type="submit" class="btn btn-primary w-100">Buy Single Ticket</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100 border-success">
+      <div class="card-body text-center p-4">
+        <div class="display-4 mb-3">👨‍👩‍👧</div>
+        <h5 class="fw-bold">Group Bundle</h5>
+        <p class="text-muted small">3 or 5 seats together. Up to 14% discount. Buyback at 80%.</p>
+        <form method="POST" action="{{ url_for('select_purchase_type', match_id=match.id) }}">
+          <input type="hidden" name="ticket_type" value="group"/>
+          <button type="submit" class="btn btn-success w-100">Buy Group Bundle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if configs %}
+  <h5 class="fw-bold mt-4 mb-3">Seat Categories & Pricing</h5>
+  <div class="row g-3">
+    {% for cat, config in configs.items() %}
+      <div class="col-md-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <h6 class="fw-bold">{{ cat }}</h6>
+            <div class="display-6 fw-bold text-primary mb-1">KES {{ config.price_kes }}</div>
+            <div class="small text-muted">{{ config.capacity }} seats</div>
+            <div class="progress mt-2" style="height:6px;">
+              {% set sold_pct = (match.sold_count / match.total_capacity * 100) if match.total_capacity > 0 else 0 %}
+              <div class="progress-bar bg-danger" style="width:{{ sold_pct }}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}

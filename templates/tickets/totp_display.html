@@ -1,0 +1,85 @@
+{% extends "partials/base.html" %}
+{% block title %}Gate Code — Ticket #{{ ticket.id }}{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow">
+      <div class="card-header text-center py-3"
+           style="background: linear-gradient(135deg,#1a56db,#0e3a8a); color:white;">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-qr-code"></i> Gate Entry Code</h5>
+        <div class="small opacity-75 mt-1">Ticket #{{ ticket.id }} &bull; {{ ticket.seat_category }} Seat {{ ticket.seat_number }}</div>
+      </div>
+
+      <div class="card-body text-center p-4">
+        <div class="mb-3">
+          <h6 class="text-muted mb-1">{{ ticket.match.home_team }} vs {{ ticket.match.away_team }}</h6>
+          <div class="small text-muted">
+            {{ ticket.match.kickoff.strftime('%d %b %Y, %H:%M') }} &bull; {{ ticket.match.venue }}
+          </div>
+        </div>
+
+        <hr/>
+
+        <!-- Live TOTP display -->
+        <div class="mb-3">
+          <div class="text-muted small mb-1">Your 6-digit gate code</div>
+          <div id="totp-code" class="display-3 fw-bold letter-spacing-wide text-primary"
+               style="letter-spacing: 0.15em; font-variant-numeric: tabular-nums;">
+            ——————
+          </div>
+          <div class="mt-2">
+            <div class="progress" style="height:6px; max-width:200px; margin:0 auto;">
+              <div id="totp-progress" class="progress-bar bg-primary" style="width:100%;
+                   transition: width 1s linear;"></div>
+            </div>
+            <div class="small text-muted mt-1">Refreshes in <span id="totp-countdown">30</span>s</div>
+          </div>
+        </div>
+
+        <hr/>
+
+        <!-- QR code for authenticator app -->
+        <div class="mb-3">
+          <div class="text-muted small mb-2">Scan to add to Google Authenticator / Authy</div>
+          <img src="{{ qr_base64 }}" alt="TOTP QR Code" class="img-fluid"
+               style="max-width:180px; border-radius:8px;"/>
+          <div class="small text-muted mt-1">Scan once — the app generates codes offline.</div>
+        </div>
+
+        <div class="alert alert-warning small text-start mb-0">
+          <i class="bi bi-shield-exclamation"></i>
+          <strong>Never screenshot this page.</strong> The code changes every 30 seconds.
+          A screenshot is useless at the gate within moments of capture.
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-3">
+      <a href="{{ url_for('my_tickets') }}" class="btn btn-outline-secondary btn-sm">
+        ← Back to My Tickets
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Fetch and display the live TOTP code every second
+async function refreshCode() {
+  try {
+    const res = await fetch('/api/totp/{{ ticket.id }}');
+    const data = await res.json();
+    if (data.code) {
+      document.getElementById('totp-code').textContent = data.code;
+    }
+    const remaining = data.seconds_remaining ?? 30;
+    document.getElementById('totp-countdown').textContent = remaining;
+    document.getElementById('totp-progress').style.width = ((remaining / 30) * 100) + '%';
+  } catch (e) { /* silent */ }
+}
+
+refreshCode();
+setInterval(refreshCode, 1000);
+</script>
+
+{% endblock %}

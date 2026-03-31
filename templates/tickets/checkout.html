@@ -1,0 +1,57 @@
+{% extends "partials/base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4"><i class="bi bi-cart-check"></i> Checkout</h4>
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Order Summary</h6>
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><td class="text-muted">Seats</td><td class="text-end fw-bold">{{ seats | join(', ') }}</td></tr>
+            <tr><td class="text-muted">Category</td><td class="text-end">{{ config.seating_category }}</td></tr>
+            <tr><td class="text-muted">Price per seat</td><td class="text-end">KES {{ per_seat_price }}</td></tr>
+            <tr><td class="text-muted">Quantity</td><td class="text-end">{{ seat_count }}</td></tr>
+            {% if ticket_type == 'group' %}
+              <tr><td class="text-muted">Bundle type</td><td class="text-end">{{ group_size }}-seat group</td></tr>
+              <tr><td class="text-muted text-warning">Buyback rate</td><td class="text-end text-warning">80% (20% penalty)</td></tr>
+            {% else %}
+              <tr><td class="text-muted">Buyback rate</td><td class="text-end">90% (10% penalty)</td></tr>
+            {% endif %}
+            <tr class="table-active"><td class="fw-bold">Total</td><td class="text-end fw-bold fs-5 text-primary">KES {{ total }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3"><i class="bi bi-wallet2 text-success"></i> Pay from Wallet</h6>
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-muted">Wallet balance</span>
+          <span class="fw-bold {% if wallet_balance >= total %}text-success{% else %}text-danger{% endif %}">
+            KES {{ wallet_balance }}
+          </span>
+        </div>
+        {% if wallet_balance >= total %}
+          <form method="POST" action="{{ url_for('process_payment', match_id=match_id) }}">
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+              <i class="bi bi-lock"></i> Confirm Payment — KES {{ total }}
+            </button>
+          </form>
+          <div class="small text-muted mt-2 text-center">Seats held for 10 minutes. Pay now to secure.</div>
+        {% else %}
+          <div class="alert alert-warning small mb-3">
+            Insufficient balance. Top up KES {{ total - wallet_balance }} more.
+          </div>
+          <a href="{{ url_for('wallet_page') }}" class="btn btn-warning w-100">
+            <i class="bi bi-plus-circle"></i> Top Up Wallet
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "partials/base.html" %}
+{% block title %}Admin Login — Stadi Soka{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card shadow border-warning">
+      <div class="card-body p-4">
+        <h3 class="mb-1 fw-bold"><i class="bi bi-shield-lock text-warning"></i> Admin Access</h3>
+        <p class="text-muted mb-4 small">Stadium administrator login.</p>
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Admin Username</label>
+            <input type="text" name="username" class="form-control" required autofocus/>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required/>
+          </div>
+          <button type="submit" class="btn btn-warning w-100 btn-lg fw-bold">Admin Login</button>
+        </form>
+        <hr/>
+        <p class="text-center mb-0 small"><a href="{{ url_for('login') }}">← Fan Login</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

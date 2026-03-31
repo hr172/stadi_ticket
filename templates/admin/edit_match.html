@@ -1,0 +1,65 @@
+{% extends "partials/base.html" %}
+{% block title %}Edit Match — Admin{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('manage_matches') }}">Matches</a></li>
+    <li class="breadcrumb-item active">Edit</li>
+  </ol>
+</nav>
+
+<h4 class="fw-bold mb-4"><i class="bi bi-pencil text-warning"></i> Edit Match</h4>
+
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Home Team</label>
+          <input type="text" name="home_team" class="form-control" value="{{ match.home_team }}" required/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Away Team</label>
+          <input type="text" name="away_team" class="form-control" value="{{ match.away_team }}" required/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Kickoff</label>
+          <input type="datetime-local" name="kickoff" class="form-control"
+                 value="{{ match.kickoff.strftime('%Y-%m-%dT%H:%M') }}" required/>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Competition</label>
+          <input type="text" name="competition" class="form-control" value="{{ match.competition }}"/>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Venue</label>
+          <input type="text" name="venue" class="form-control" value="{{ match.venue }}"/>
+        </div>
+        <div class="col-12">
+          <div class="form-check">
+            <input type="checkbox" name="is_active" id="is_active" class="form-check-input"
+                   {% if match.is_active %}checked{% endif %}/>
+            <label for="is_active" class="form-check-label">Match is active (visible to fans)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info small mt-3">
+        <i class="bi bi-info-circle"></i>
+        Seat category prices and capacities cannot be edited once tickets have been sold.
+        Manage sold-out categories by deactivating the match.
+      </div>
+
+      <div class="mt-3 d-flex gap-2">
+        <button type="submit" class="btn btn-warning btn-lg px-5 fw-bold">
+          <i class="bi bi-check-circle"></i> Save Changes
+        </button>
+        <a href="{{ url_for('manage_matches') }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

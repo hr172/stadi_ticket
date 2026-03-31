@@ -1,0 +1,38 @@
+{% extends "partials/base.html" %}
+{% block title %}Seats Found{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-3"><i class="bi bi-check-circle text-success"></i> {{ group_size }} Seats Found</h4>
+<div class="card shadow mb-4">
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <h6 class="text-muted mb-1">Assigned Seats</h6>
+        <div class="d-flex gap-2 flex-wrap mb-3">
+          {% for seat in seats %}
+            <span class="badge bg-success fs-5">{{ seat }}</span>
+          {% endfor %}
+        </div>
+        <div class="small text-muted">{{ config.seating_category }} section &bull; Consecutive seats</div>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <div class="text-muted small">Per seat ({{ discount_percent }}% off)</div>
+        <div class="fs-4 fw-bold">KES {{ per_seat_price }}</div>
+        <div class="text-muted small mt-1">Total for {{ group_size }} seats</div>
+        <div class="display-6 fw-bold text-primary">KES {{ total_price }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer bg-transparent d-flex gap-2">
+    <a href="{{ url_for('checkout', match_id=match_id) }}" class="btn btn-primary flex-grow-1">
+      <i class="bi bi-cart-check"></i> Proceed to Checkout
+    </a>
+    <a href="{{ url_for('random_group', match_id=match_id) }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-repeat"></i> Try Different Seats
+    </a>
+  </div>
+</div>
+<div class="alert alert-warning small">
+  <i class="bi bi-info-circle"></i> These seats are held for <strong>10 minutes</strong>.
+  Group bundles have an <strong>80% buyback rate</strong> (20% commitment penalty).
+</div>
+{% endblock %}

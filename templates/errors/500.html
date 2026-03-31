@@ -1,0 +1,15 @@
+{% extends "partials/base.html" %}
+{% block title %}Server Error — Stadi Soka{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <div class="display-1 fw-bold text-danger">500</div>
+  <h3 class="mb-3">Something Went Wrong</h3>
+  <p class="text-muted mb-4">An internal error occurred. The transaction has been rolled back — no funds were lost.</p>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-primary me-2">
+    <i class="bi bi-house"></i> Back to Dashboard
+  </a>
+  <a href="{{ url_for('wallet_page') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-wallet2"></i> Check Wallet Balance
+  </a>
+</div>
+{% endblock %}

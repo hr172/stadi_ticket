@@ -1,0 +1,80 @@
+{% extends "partials/base.html" %}
+{% block title %}Add Match — Admin{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('manage_matches') }}">Matches</a></li>
+    <li class="breadcrumb-item active">Add Match</li>
+  </ol>
+</nav>
+
+<h4 class="fw-bold mb-4"><i class="bi bi-plus-circle text-primary"></i> Add New Match</h4>
+
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Home Team</label>
+          <input type="text" name="home_team" class="form-control" required placeholder="e.g. Gor Mahia"/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Away Team</label>
+          <input type="text" name="away_team" class="form-control" required placeholder="e.g. AFC Leopards"/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Kickoff Date &amp; Time</label>
+          <input type="datetime-local" name="kickoff" class="form-control" required/>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Competition</label>
+          <select name="competition" class="form-select">
+            <option value="KPL">KPL</option>
+            <option value="FKF Cup">FKF Cup</option>
+            <option value="AFCON">AFCON</option>
+            <option value="Friendly">Friendly</option>
+            <option value="CAF">CAF</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Venue</label>
+          <input type="text" name="venue" class="form-control" value="Kasarani Stadium"/>
+        </div>
+      </div>
+
+      <hr class="my-4"/>
+      <h6 class="fw-bold mb-3">Seat Configuration</h6>
+
+      <div class="row g-3">
+        {% for cat, default_price, default_cap in [('Regular', 250, 5000), ('VIP', 800, 500), ('VVIP', 1500, 50)] %}
+          <div class="col-md-4">
+            <div class="card border-0 bg-light p-3">
+              <h6 class="fw-bold mb-3">{{ cat }}</h6>
+              <div class="mb-2">
+                <label class="form-label small text-muted">Price (KES)</label>
+                <input type="number" name="{{ cat.lower() }}_price" class="form-control"
+                       value="{{ default_price }}" min="1" required/>
+              </div>
+              <div>
+                <label class="form-label small text-muted">Capacity (seats)</label>
+                <input type="number" name="{{ cat.lower() }}_capacity" class="form-control"
+                       value="{{ default_cap }}" min="1" required/>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-lg px-5">
+          <i class="bi bi-check-circle"></i> Create Match
+        </button>
+        <a href="{{ url_for('manage_matches') }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

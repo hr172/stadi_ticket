@@ -1,0 +1,71 @@
+{% extends "partials/base.html" %}
+{% block title %}Manage Users — Admin{% endblock %}
+{% block content %}
+
+<h4 class="fw-bold mb-4"><i class="bi bi-people text-primary"></i> Registered Fans</h4>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Username</th>
+        <th>Phone</th>
+        <th>Joined</th>
+        <th class="text-center">Purchases</th>
+        <th class="text-center">Attended</th>
+        <th class="text-center">Buybacks</th>
+        <th class="text-center">Buyback Rate</th>
+        <th class="text-center">Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        {% set is_risk = user.buyback_rate > 0.30 and user.attendance_rate < 0.50 %}
+        <tr class="{% if is_risk %}table-warning{% endif %}">
+          <td>
+            <div class="fw-bold">{{ user.username }}</div>
+            <small class="text-muted">{{ user.email }}</small>
+          </td>
+          <td class="small">{{ user.phone }}</td>
+          <td class="small text-muted">{{ user.created_at.strftime('%d %b %Y') }}</td>
+          <td class="text-center">{{ user.total_purchases }}</td>
+          <td class="text-center">{{ user.total_attended }}</td>
+          <td class="text-center">{{ user.total_buybacks }}</td>
+          <td class="text-center">
+            <span class="badge {% if user.buyback_rate_pct > 30 %}bg-danger{% elif user.buyback_rate_pct > 15 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+              {{ user.buyback_rate_pct }}%
+            </span>
+          </td>
+          <td class="text-center">
+            {% if is_risk %}
+              <span class="badge bg-danger" title="High buyback rate + low attendance = speculator risk">
+                <i class="bi bi-exclamation-triangle"></i> High
+              </span>
+            {% elif user.buyback_rate > 0.15 %}
+              <span class="badge bg-warning text-dark">
+                <i class="bi bi-dash"></i> Watch
+              </span>
+            {% else %}
+              <span class="badge bg-success">
+                <i class="bi bi-check"></i> Normal
+              </span>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-5">No fans registered yet.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="alert alert-info small mt-3">
+  <i class="bi bi-info-circle"></i>
+  <strong>Risk flags:</strong> Users with &gt;30% buyback rate AND &lt;50% attendance rate
+  are flagged as potential speculators. These are tracked for progressive penalty application
+  (future feature).
+</div>
+
+{% endblock %}

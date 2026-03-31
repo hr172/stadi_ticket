@@ -1,0 +1,98 @@
+{% extends "partials/base.html" %}
+{% block title %}Pick Your Seat{% endblock %}
+{% block content %}
+
+<h4 class="fw-bold mb-1">Pick Your Seat — {{ config.seating_category }}</h4>
+<p class="text-muted mb-3">KES {{ config.price_kes }} per seat &bull; Click a green seat to hold it for 10 minutes.</p>
+
+<div class="d-flex gap-3 mb-3 small">
+  <span><span class="badge bg-success">■</span> Available</span>
+  <span><span class="badge bg-warning text-dark">■</span> Held (10 min)</span>
+  <span><span class="badge bg-danger">■</span> Sold</span>
+  <span><span class="badge bg-primary">■</span> Your hold</span>
+</div>
+
+<div id="seat-grid" class="seat-grid mb-3">
+  <div class="text-center py-4 text-muted loading">Loading seat map…</div>
+</div>
+
+<div id="hold-info" class="alert alert-primary d-none">
+  <strong id="hold-seat-label"></strong> held for 10 minutes.
+  <span id="hold-timer" class="fw-bold ms-2"></span>
+  <a id="proceed-btn" href="#" class="btn btn-primary btn-sm ms-3">Proceed to Checkout →</a>
+</div>
+
+<script>
+const MATCH_ID = {{ match_id }};
+const CATEGORY = "{{ config.seating_category }}";
+let holdExpiry = null;
+let timerInterval = null;
+let currentHoldId = null;
+
+async function loadSeats() {
+  const res = await fetch(`/api/seats/${MATCH_ID}/${CATEGORY}`);
+  const data = await res.json();
+  renderGrid(data.seats);
+}
+
+function renderGrid(seats) {
+  const grid = document.getElementById('seat-grid');
+  grid.innerHTML = '';
+  seats.forEach(seat => {
+    const el = document.createElement('div');
+    el.className = 'seat';
+    el.textContent = seat.number;
+    if (seat.status === 'available') {
+      el.classList.add('available');
+      el.onclick = () => holdSeat(seat.number);
+    } else if (seat.status === 'held_by_user') {
+      el.classList.add('held');
+      el.style.background = '#0d6efd';
+    } else if (seat.status === 'held') {
+      el.classList.add('held');
+      el.title = 'Held by another fan';
+    } else {
+      el.classList.add('unavailable');
+      el.title = 'Sold';
+    }
+    grid.appendChild(el);
+  });
+}
+
+async function holdSeat(seatNumber) {
+  const res = await fetch('/api/hold_seat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({match_id: MATCH_ID, category: CATEGORY, seat_number: seatNumber})
+  });
+  const data = await res.json();
+  if (data.success) {
+    currentHoldId = data.hold_id;
+    holdExpiry = new Date(data.expires_at);
+    document.getElementById('hold-seat-label').textContent = `Seat ${seatNumber} (${CATEGORY})`;
+    document.getElementById('proceed-btn').href = data.redirect;
+    document.getElementById('hold-info').classList.remove('d-none');
+    startTimer();
+    loadSeats();
+  } else {
+    alert(data.message);
+    loadSeats();
+  }
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    const remaining = Math.max(0, Math.floor((holdExpiry - Date.now()) / 1000));
+    const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const s = (remaining % 60).toString().padStart(2, '0');
+    document.getElementById('hold-timer').textContent = `${m}:${s} remaining`;
+    if (remaining === 0) { clearInterval(timerInterval); loadSeats(); }
+  }, 1000);
+}
+
+// Poll every 5 seconds for real-time updates
+loadSeats();
+setInterval(loadSeats, 5000);
+</script>
+{% endblock %}

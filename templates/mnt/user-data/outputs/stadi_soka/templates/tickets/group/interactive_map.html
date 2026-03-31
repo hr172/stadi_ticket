@@ -1,0 +1,66 @@
+{% extends "partials/base.html" %}
+{% block title %}Pick Your Group Seats{% endblock %}
+{% block content %}
+
+<h4 class="fw-bold mb-1">Pick {{ group_size }} Seats Together — {{ config.seating_category }}</h4>
+<p class="text-muted mb-3">Highlighted clusters show {{ group_size }} consecutive available seats.</p>
+
+<div class="d-flex gap-3 mb-3 small">
+  <span><span class="badge bg-success">■</span> Available cluster</span>
+  <span><span class="badge bg-warning text-dark">■</span> Held</span>
+  <span><span class="badge bg-danger">■</span> Sold</span>
+</div>
+
+{% if clusters %}
+  <div class="row g-3 mb-4">
+    {% for cluster in clusters %}
+      <div class="col-md-4 col-6">
+        <div class="card border-success">
+          <div class="card-body text-center py-3">
+            <div class="fw-bold mb-1">Seats {{ cluster.start }}–{{ cluster.end }}</div>
+            <div class="d-flex justify-content-center gap-1 mb-2">
+              {% for s in cluster.seats %}
+                <span class="badge bg-success">{{ s }}</span>
+              {% endfor %}
+            </div>
+            <button class="btn btn-success btn-sm w-100 hold-cluster-btn"
+                    data-seats="{{ cluster.seats | tojson }}"
+                    data-match="{{ match_id }}"
+                    data-category="{{ config.seating_category }}">
+              <i class="bi bi-hand-index"></i> Select This Cluster
+            </button>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-warning">
+    No clusters of {{ group_size }} consecutive seats are currently available.
+    <a href="{{ url_for('random_group', match_id=match_id) }}" class="alert-link">Try Random Mode</a> instead.
+  </div>
+{% endif %}
+
+<script>
+document.querySelectorAll('.hold-cluster-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Holding…';
+    const seats = JSON.parse(btn.dataset.seats);
+    const res = await fetch('/api/hold_cluster', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({match_id: parseInt(btn.dataset.match), category: btn.dataset.category, seats})
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.redirect;
+    } else {
+      alert(data.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-hand-index"></i> Select This Cluster';
+    }
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "partials/base.html" %}
+{% block title %}Gate Terminal — Gate #{{ gate_id }}{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-5 col-lg-4">
+
+    <div class="card shadow-lg">
+      <div class="card-header text-center py-3"
+           style="background:linear-gradient(135deg,#1f2937,#111827); color:white;">
+        <h4 class="mb-0 fw-bold"><i class="bi bi-door-open"></i> Gate Terminal</h4>
+        <div class="small opacity-75 mt-1">Kasarani Stadium &mdash; Gate #{{ gate_id }}</div>
+      </div>
+
+      <div class="card-body text-center p-4">
+
+        <!-- Input area -->
+        <div id="scanner-area">
+          <p class="text-muted mb-3 small">Fan types their 6-digit TOTP code below</p>
+          <input type="text" id="totpCode"
+                 class="form-control form-control-lg text-center mb-3"
+                 maxlength="6" inputmode="numeric" pattern="[0-9]*"
+                 placeholder="• • • • • •"
+                 style="font-size:2rem; letter-spacing:0.35em; font-variant-numeric:tabular-nums;"
+                 autofocus/>
+          <button id="validateBtn" class="btn btn-success btn-lg w-100 fw-bold">
+            <i class="bi bi-check-circle"></i> Validate
+          </button>
+        </div>
+
+        <!-- Result area -->
+        <div id="result-area" style="display:none;">
+          <div id="result-icon" class="display-1 mb-2"></div>
+          <div id="result-message" class="alert fs-5 fw-bold mb-3"></div>
+          <div id="result-detail" class="text-muted small mb-3"></div>
+          <button id="newScanBtn" class="btn btn-secondary w-100">
+            <i class="bi bi-arrow-repeat"></i> Next Fan
+          </button>
+        </div>
+
+      </div>
+
+      <div class="card-footer text-center text-muted small py-2">
+        <i class="bi bi-wifi-off"></i> Validates offline &nbsp;|&nbsp;
+        <i class="bi bi-arrow-repeat"></i> 1 re-entry per match day &nbsp;|&nbsp;
+        <i class="bi bi-clock"></i> Code refreshes every 30s
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const GATE_ID = {{ gate_id }};
+
+async function validate() {
+  const code = document.getElementById('totpCode').value.trim();
+  if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+    flash('Please enter exactly 6 digits.', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('validateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Validating…';
+
+  try {
+    const res = await fetch('/gate/validate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code, gate_id: GATE_ID})
+    });
+    const data = await res.json();
+    showResult(data);
+  } catch (e) {
+    showResult({success: false, message: 'Network error — please try again.'});
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-check-circle"></i> Validate';
+    document.getElementById('totpCode').value = '';
+  }
+}
+
+function showResult(data) {
+  document.getElementById('scanner-area').style.display = 'none';
+  const area = document.getElementById('result-area');
+  const icon = document.getElementById('result-icon');
+  const msg  = document.getElementById('result-message');
+  const det  = document.getElementById('result-detail');
+
+  if (data.success) {
+    const isReentry = data.entry_type === 'reentry';
+    icon.textContent = isReentry ? '🔄' : '✅';
+    msg.className = 'alert alert-success fs-5 fw-bold mb-3';
+    msg.textContent = isReentry ? 'RE-ENTRY GRANTED' : 'ACCESS GRANTED';
+    det.innerHTML = `${data.message}<br/><strong>${data.seat || ''}</strong><br/><small class="text-muted">${data.match || ''}</small>`;
+  } else {
+    icon.textContent = '❌';
+    msg.className = 'alert alert-danger fs-5 fw-bold mb-3';
+    msg.textContent = 'ACCESS DENIED';
+    det.textContent = data.message;
+  }
+
+  area.style.display = 'block';
+
+  // Auto-reset after 4 seconds
+  setTimeout(() => {
+    area.style.display = 'none';
+    document.getElementById('scanner-area').style.display = 'block';
+    document.getElementById('totpCode').focus();
+  }, 4000);
+}
+
+function flash(msg, type) {
+  const el = document.createElement('div');
+  el.className = `alert alert-${type} alert-dismissible fade show mt-2`;
+  el.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+  document.getElementById('scanner-area').prepend(el);
+}
+
+// Auto-submit when 6 digits are entered
+document.getElementById('totpCode').addEventListener('input', e => {
+  if (e.target.value.length === 6) validate();
+});
+
+document.getElementById('validateBtn').addEventListener('click', validate);
+
+document.getElementById('newScanBtn').addEventListener('click', () => {
+  document.getElementById('result-area').style.display = 'none';
+  document.getElementById('scanner-area').style.display = 'block';
+  document.getElementById('totpCode').focus();
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "partials/base.html" %}
+{% block title %}Admin Dashboard — Stadi Soka{% endblock %}
+{% block content %}
+
+<h4 class="fw-bold mb-4"><i class="bi bi-speedometer2 text-warning"></i> Admin Dashboard</h4>
+
+<!-- KPI cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-primary">{{ total_users }}</div>
+        <div class="small text-muted mt-1"><i class="bi bi-people"></i> Registered Fans</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-success">{{ total_tickets }}</div>
+        <div class="small text-muted mt-1"><i class="bi bi-ticket-perforated"></i> Active Tickets</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-warning">{{ total_buybacks }}</div>
+        <div class="small text-muted mt-1"><i class="bi bi-arrow-repeat"></i> Buybacks</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card text-center shadow-sm">
+      <div class="card-body py-4">
+        <div class="display-5 fw-bold text-info">KES {{ "{:,}".format(total_revenue) }}</div>
+        <div class="small text-muted mt-1"><i class="bi bi-cash-stack"></i> Total Revenue</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Matches table -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h5 class="fw-bold mb-0">All Matches</h5>
+  <a href="{{ url_for('add_match') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-circle"></i> Add Match
+  </a>
+</div>
+
+{% if matches %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Match</th>
+          <th>Kickoff</th>
+          <th>Venue</th>
+          <th>Sell-through</th>
+          <th>Status</th>
+          <th>Buyback</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for match in matches %}
+          <tr>
+            <td class="fw-bold">{{ match.home_team }} vs {{ match.away_team }}<br/>
+              <small class="text-muted fw-normal">{{ match.competition }}</small>
+            </td>
+            <td class="small">{{ match.kickoff.strftime('%d %b %Y %H:%M') }}</td>
+            <td class="small">{{ match.venue }}</td>
+            <td>
+              <div class="progress" style="height:8px; min-width:80px;">
+                <div class="progress-bar {% if match.sell_through_pct >= 80 %}bg-danger{% elif match.sell_through_pct >= 50 %}bg-warning{% else %}bg-success{% endif %}"
+                     style="width:{{ match.sell_through_pct }}%"></div>
+              </div>
+              <small class="text-muted">{{ match.sell_through_pct }}% ({{ match.sold_count }}/{{ match.total_capacity }})</small>
+            </td>
+            <td>
+              {% if match.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-secondary">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if match.buyback_available %}
+                <span class="badge bg-success"><i class="bi bi-check"></i> Open</span>
+              {% else %}
+                <span class="badge bg-light text-muted border">Locked</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('edit_match', match_id=match.id) }}"
+                 class="btn btn-outline-secondary btn-sm me-1">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="POST" action="{{ url_for('toggle_match', match_id=match.id) }}"
+                    class="d-inline">
+                <button type="submit" class="btn btn-outline-warning btn-sm me-1"
+                        title="{{ 'Deactivate' if match.is_active else 'Activate' }}">
+                  <i class="bi bi-toggle-{{ 'on' if match.is_active else 'off' }}"></i>
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('delete_match', match_id=match.id) }}"
+                    class="d-inline"
+                    onsubmit="return confirm('Delete {{ match.home_team }} vs {{ match.away_team }}?')">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-calendar-x display-4 d-block mb-3"></i>
+    <p>No matches yet. <a href="{{ url_for('add_match') }}">Add the first match →</a></p>
+  </div>
+{% endif %}
+
+{% endblock %}

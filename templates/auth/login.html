@@ -1,0 +1,30 @@
+{% extends "partials/base.html" %}
+{% block title %}Login — Stadi Soka{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card shadow">
+      <div class="card-body p-4">
+        <h3 class="mb-1 fw-bold"><i class="bi bi-box-arrow-in-right text-primary"></i> Fan Login</h3>
+        <p class="text-muted mb-4 small">Sign in to buy tickets and access your wallet.</p>
+
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" required autofocus/>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required/>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 btn-lg">Log In</button>
+        </form>
+
+        <hr/>
+        <p class="text-center mb-0 small">No account? <a href="{{ url_for('register') }}">Register</a></p>
+        <p class="text-center mt-2 mb-0 small text-muted"><a href="{{ url_for('admin_login') }}">Stadium Admin Login →</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

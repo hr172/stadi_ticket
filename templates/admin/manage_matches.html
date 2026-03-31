@@ -1,0 +1,86 @@
+{% extends "partials/base.html" %}
+{% block title %}Manage Matches — Admin{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-calendar-event text-primary"></i> Manage Matches</h4>
+  <a href="{{ url_for('add_match') }}" class="btn btn-primary">
+    <i class="bi bi-plus-circle"></i> Add Match
+  </a>
+</div>
+
+{% if matches %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Match</th>
+          <th>Kickoff</th>
+          <th>Capacity</th>
+          <th>Sold</th>
+          <th>Returned</th>
+          <th>Status</th>
+          <th>Buyback</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for match in matches %}
+          <tr>
+            <td>
+              <div class="fw-bold">{{ match.home_team }} vs {{ match.away_team }}</div>
+              <small class="text-muted">{{ match.competition }} &bull; {{ match.venue }}</small>
+            </td>
+            <td class="small">{{ match.kickoff.strftime('%d %b %Y %H:%M') }}</td>
+            <td>{{ match.total_capacity }}</td>
+            <td>
+              <span class="fw-bold">{{ match.sold_count }}</span>
+              <div class="progress mt-1" style="height:4px; min-width:60px;">
+                <div class="progress-bar bg-primary" style="width:{{ match.sell_through_pct }}%"></div>
+              </div>
+              <small class="text-muted">{{ match.sell_through_pct }}%</small>
+            </td>
+            <td>{{ match.returned_count }}</td>
+            <td>
+              <span class="badge {% if match.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ 'Active' if match.is_active else 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge {% if match.buyback_available %}bg-success{% else %}bg-light text-muted border{% endif %}">
+                {{ 'Open' if match.buyback_available else 'Locked' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+                <a href="{{ url_for('edit_match', match_id=match.id) }}"
+                   class="btn btn-outline-secondary" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="POST" action="{{ url_for('toggle_match', match_id=match.id) }}" class="d-inline">
+                  <button type="submit" class="btn btn-outline-warning"
+                          title="{{ 'Deactivate' if match.is_active else 'Activate' }}">
+                    <i class="bi bi-toggle-{{ 'on' if match.is_active else 'off' }}"></i>
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('delete_match', match_id=match.id) }}" class="d-inline"
+                      onsubmit="return confirm('Delete this match? All associated data will be removed.')">
+                  <button type="submit" class="btn btn-outline-danger" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-calendar-x display-4 d-block mb-3"></i>
+    <p>No matches yet. <a href="{{ url_for('add_match') }}">Create the first one →</a></p>
+  </div>
+{% endif %}
+
+{% endblock %}

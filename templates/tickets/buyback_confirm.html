@@ -1,0 +1,67 @@
+{% extends "partials/base.html" %}
+{% block title %}Return Ticket — Stadi Soka{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h4 class="fw-bold mb-4"><i class="bi bi-arrow-return-left text-warning"></i> Return Ticket</h4>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h6 class="text-muted mb-1">Ticket Details</h6>
+        <div class="fw-bold mb-1">{{ ticket.match.home_team }} vs {{ ticket.match.away_team }}</div>
+        <div class="small text-muted mb-3">
+          {{ ticket.match.kickoff.strftime('%d %b %Y, %H:%M') }} &bull;
+          {{ ticket.seat_category }} &bull; Seat #{{ ticket.seat_number }}
+        </div>
+
+        <div class="d-flex justify-content-between mb-1">
+          <span class="text-muted">Original price paid</span>
+          <span class="fw-bold">KES {{ ticket.price_paid }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-1">
+          <span class="text-muted">Commitment penalty</span>
+          <span class="text-danger fw-bold">
+            –KES {{ ticket.price_paid - refund_preview }}
+            ({{ '20' if ticket.ticket_type == 'group' else '10' }}%)
+          </span>
+        </div>
+        <hr/>
+        <div class="d-flex justify-content-between">
+          <span class="fw-bold fs-5">You will receive</span>
+          <span class="fw-bold fs-5 text-success">KES {{ refund_preview }}</span>
+        </div>
+        <div class="small text-muted mt-1">Credited instantly to your wallet.</div>
+      </div>
+    </div>
+
+    {% if eligible %}
+      <div class="alert alert-warning small mb-3">
+        <i class="bi bi-exclamation-triangle"></i>
+        This action is <strong>irreversible</strong>. The ticket will be returned to the platform
+        and listed for resale at 110% of the original price.
+        {% if ticket.ticket_type == 'group' %}
+          Group bundles carry a 20% commitment penalty.
+        {% else %}
+          Single tickets carry a 10% commitment penalty.
+        {% endif %}
+      </div>
+
+      <form method="POST">
+        <button type="submit" class="btn btn-warning w-100 btn-lg fw-bold">
+          <i class="bi bi-arrow-return-left"></i> Confirm Return — Receive KES {{ refund_preview }}
+        </button>
+      </form>
+    {% else %}
+      <div class="alert alert-danger">
+        <i class="bi bi-x-circle"></i> <strong>Buyback not available:</strong> {{ msg }}
+      </div>
+    {% endif %}
+
+    <div class="text-center mt-3">
+      <a href="{{ url_for('my_tickets') }}" class="btn btn-link text-muted">← Cancel</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

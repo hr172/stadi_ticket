@@ -1,0 +1,38 @@
+{% extends "partials/base.html" %}
+{% block title %}Register — Stadi Soka{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card shadow">
+      <div class="card-body p-4">
+        <h3 class="mb-1 fw-bold"><i class="bi bi-person-plus text-primary"></i> Create Account</h3>
+        <p class="text-muted mb-4 small">Join Stadi Soka to buy, manage, and resell match tickets.</p>
+
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" required autofocus placeholder="e.g. john_gor"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required placeholder="you@example.com"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">M-Pesa Phone Number</label>
+            <input type="tel" name="phone" class="form-control" required placeholder="+254712345678"/>
+            <div class="form-text">Used for M-Pesa wallet top-ups and buyback refunds.</div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required minlength="6"/>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 btn-lg">Create Account</button>
+        </form>
+
+        <hr/>
+        <p class="text-center mb-0 small">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
